@@ -124,7 +124,7 @@ if (themeToggle) {
   let mouse = { x: null, y: null, active: false };
   let time = 0;
   const COUNT = 110;
-  const STAR_COUNT = 6;
+  const STAR_COUNT = 18;
   const MAX_DIST = 170;
   const MOUSE_DIST = 220;
 
@@ -160,7 +160,7 @@ if (themeToggle) {
         speed: 3 + Math.random() * 5,
         angle: Math.PI / 4 + (Math.random() - 0.5) * 0.3,
         opacity: 0,
-        delay: Math.random() * 400,
+        delay: Math.random() * 150,
         life: 0,
         maxLife: 60 + Math.random() * 40
       });
@@ -258,7 +258,7 @@ if (themeToggle) {
       const t = (s.life - s.delay) / s.maxLife;
       if (t > 1) {
         s.life = 0;
-        s.delay = 80 + Math.random() * 300;
+        s.delay = 20 + Math.random() * 120;
         s.x = Math.random() * w;
         s.y = Math.random() * h * 0.5;
         s.len = 40 + Math.random() * 90;
@@ -333,6 +333,174 @@ if (themeToggle) {
 
   window.addEventListener("touchend", function () {
     mouse.active = false;
+  });
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
+  }
+})();
+
+// ===== 3D Rotating Globe =====
+(function () {
+  const canvas = document.getElementById("globe");
+  if (!canvas) return;
+  const ctx = canvas.getContext("2d");
+  let size = 0;
+  let rotation = 0;
+  let animationId;
+  const LAT_LINES = 12;
+  const LON_LINES = 18;
+  const DOTS = [];
+
+  for (let i = 0; i < 80; i++) {
+    const lat = (Math.random() - 0.5) * Math.PI;
+    const lon = Math.random() * Math.PI * 2;
+    DOTS.push({ lat, lon, bright: Math.random() > 0.7 });
+  }
+
+  function isLight() {
+    return document.documentElement.getAttribute("data-theme") === "light";
+  }
+
+  function resize() {
+    const rect = canvas.parentElement.getBoundingClientRect();
+    size = Math.min(rect.width, rect.height);
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = size * dpr;
+    canvas.height = size * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+
+  function project(lat, lon, rot, R) {
+    const x = Math.cos(lat) * Math.sin(lon + rot);
+    const y = Math.sin(lat);
+    const z = Math.cos(lat) * Math.cos(lon + rot);
+    return {
+      x: size / 2 + x * R,
+      y: size / 2 + y * R,
+      z: z,
+      visible: z > -0.15
+    };
+  }
+
+  function draw() {
+    rotation += 0.004;
+    ctx.clearRect(0, 0, size, size);
+    const light = isLight();
+    const R = size * 0.42;
+    const accent = light ? [8, 145, 178] : [34, 211, 238];
+    const accent2 = light ? [99, 102, 241] : [129, 140, 248];
+    const lineA = light ? 0.25 : 0.35;
+
+    const glow = ctx.createRadialGradient(size / 2, size / 2, R * 0.7, size / 2, size / 2, R * 1.35);
+    glow.addColorStop(0, "rgba(" + accent.join(",") + ",0.08)");
+    glow.addColorStop(0.6, "rgba(" + accent2.join(",") + ",0.04)");
+    glow.addColorStop(1, "rgba(0,0,0,0)");
+    ctx.beginPath();
+    ctx.arc(size / 2, size / 2, R * 1.35, 0, Math.PI * 2);
+    ctx.fillStyle = glow;
+    ctx.fill();
+
+    const sphere = ctx.createRadialGradient(
+      size / 2 - R * 0.3, size / 2 - R * 0.3, R * 0.1,
+      size / 2, size / 2, R
+    );
+    sphere.addColorStop(0, light ? "rgba(8,145,178,0.06)" : "rgba(34,211,238,0.1)");
+    sphere.addColorStop(0.7, light ? "rgba(99,102,241,0.04)" : "rgba(15,23,42,0.3)");
+    sphere.addColorStop(1, light ? "rgba(8,145,178,0.08)" : "rgba(34,211,238,0.12)");
+    ctx.beginPath();
+    ctx.arc(size / 2, size / 2, R, 0, Math.PI * 2);
+    ctx.fillStyle = sphere;
+    ctx.fill();
+
+    for (let i = 0; i <= LAT_LINES; i++) {
+      const lat = -Math.PI / 2 + (i / LAT_LINES) * Math.PI;
+      ctx.beginPath();
+      let started = false;
+      for (let j = 0; j <= 64; j++) {
+        const lon = (j / 64) * Math.PI * 2;
+        const p = project(lat, lon, rotation, R);
+        if (p.z > 0) {
+          if (!started) { ctx.moveTo(p.x, p.y); started = true; }
+          else ctx.lineTo(p.x, p.y);
+        } else {
+          started = false;
+        }
+      }
+      ctx.strokeStyle = "rgba(" + accent.join(",") + "," + (lineA * 0.6) + ")";
+      ctx.lineWidth = 0.7;
+      ctx.stroke();
+    }
+
+    for (let i = 0; i < LON_LINES; i++) {
+      const lon = (i / LON_LINES) * Math.PI * 2;
+      ctx.beginPath();
+      let started = false;
+      for (let j = 0; j <= 64; j++) {
+        const lat = -Math.PI / 2 + (j / 64) * Math.PI;
+        const p = project(lat, lon, rotation, R);
+        if (p.z > 0) {
+          if (!started) { ctx.moveTo(p.x, p.y); started = true; }
+          else ctx.lineTo(p.x, p.y);
+        } else {
+          started = false;
+        }
+      }
+      ctx.strokeStyle = "rgba(" + accent2.join(",") + "," + (lineA * 0.5) + ")";
+      ctx.lineWidth = 0.7;
+      ctx.stroke();
+    }
+
+    ctx.beginPath();
+    ctx.arc(size / 2, size / 2, R, 0, Math.PI * 2);
+    ctx.strokeStyle = "rgba(" + accent.join(",") + "," + (light ? 0.35 : 0.5) + ")";
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    for (const d of DOTS) {
+      const p = project(d.lat, d.lon, rotation, R);
+      if (!p.visible || p.z < 0.05) continue;
+      const a = Math.min(1, p.z + 0.2) * (d.bright ? 0.9 : 0.45);
+      const r = d.bright ? 2.2 : 1.4;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
+      ctx.fillStyle = "rgba(" + accent.join(",") + "," + a + ")";
+      ctx.fill();
+      if (d.bright) {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, r * 3, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(" + accent.join(",") + "," + (a * 0.2) + ")";
+        ctx.fill();
+      }
+    }
+
+    ctx.beginPath();
+    let started = false;
+    for (let j = 0; j <= 64; j++) {
+      const lon = (j / 64) * Math.PI * 2;
+      const p = project(0, lon, rotation, R);
+      if (p.z > 0) {
+        if (!started) { ctx.moveTo(p.x, p.y); started = true; }
+        else ctx.lineTo(p.x, p.y);
+      } else started = false;
+    }
+    ctx.strokeStyle = "rgba(" + accent.join(",") + "," + (light ? 0.4 : 0.55) + ")";
+    ctx.lineWidth = 1.2;
+    ctx.stroke();
+
+    animationId = requestAnimationFrame(draw);
+  }
+
+  function init() {
+    resize();
+    if (animationId) cancelAnimationFrame(animationId);
+    draw();
+  }
+
+  window.addEventListener("resize", function () {
+    resize();
   });
 
   if (document.readyState === "loading") {
