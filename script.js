@@ -486,16 +486,3 @@ document.querySelectorAll('a[download], a.btn-resume').forEach(function (a) {
     burstConfetti(a);
   });
 });
-
-// ===== Contact form feedback =====
-(function () {
-  const form = document.getElementById("contact-form");
-  if (!form) return;
-  form.addEventListener("submit", function (e) {
-    const btn = form.querySelector(".form-submit");
-    if (btn) {
-      btn.textContent = "Sending…";
-    }
-    burstConfetti(btn || form);
-  });
-})();
