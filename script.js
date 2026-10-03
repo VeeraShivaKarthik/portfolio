@@ -96,8 +96,12 @@ const themeToggle = document.getElementById("theme-toggle");
 const root = document.documentElement;
 
 function setTheme(theme) {
+  root.classList.add("theme-changing");
   root.setAttribute("data-theme", theme);
   localStorage.setItem("theme", theme);
+  window.setTimeout(function () {
+    root.classList.remove("theme-changing");
+  }, 500);
 }
 
 if (themeToggle) {
