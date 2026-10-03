@@ -341,3 +341,161 @@ if (themeToggle) {
     init();
   }
 })();
+
+// ===== Scroll progress =====
+(function () {
+  const bar = document.getElementById("scroll-progress");
+  if (!bar) return;
+  function update() {
+    const h = document.documentElement.scrollHeight - window.innerHeight;
+    const p = h > 0 ? (window.scrollY / h) * 100 : 0;
+    bar.style.width = p + "%";
+  }
+  window.addEventListener("scroll", update, { passive: true });
+  update();
+})();
+
+// ===== Back to top =====
+(function () {
+  const btn = document.getElementById("back-to-top");
+  if (!btn) return;
+  window.addEventListener("scroll", function () {
+    if (window.scrollY > 400) btn.classList.add("visible");
+    else btn.classList.remove("visible");
+  }, { passive: true });
+  btn.addEventListener("click", function () {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  });
+})();
+
+// ===== Active nav link =====
+(function () {
+  const sections = document.querySelectorAll("section[id]");
+  const links = document.querySelectorAll(".nav-links a[href^='#']");
+  if (!sections.length || !links.length) return;
+  function onScroll() {
+    let current = "";
+    sections.forEach(function (sec) {
+      const top = sec.offsetTop - 120;
+      if (window.scrollY >= top) current = sec.getAttribute("id");
+    });
+    links.forEach(function (a) {
+      a.classList.remove("active-link");
+      if (a.getAttribute("href") === "#" + current) a.classList.add("active-link");
+    });
+  }
+  window.addEventListener("scroll", onScroll, { passive: true });
+  onScroll();
+})();
+
+// ===== Skill meters =====
+(function () {
+  const meters = document.querySelectorAll(".skill-meter");
+  if (!meters.length) return;
+  const obs = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (entry.isIntersecting) {
+        const el = entry.target;
+        const level = el.getAttribute("data-level") || "0";
+        const fill = el.querySelector(".meter-fill");
+        if (fill) fill.style.width = level + "%";
+        obs.unobserve(el);
+      }
+    });
+  }, { threshold: 0.3 });
+  meters.forEach(function (m) { obs.observe(m); });
+})();
+
+// ===== Project filters =====
+(function () {
+  const buttons = document.querySelectorAll(".filter-btn");
+  const cards = document.querySelectorAll(".project-card");
+  if (!buttons.length) return;
+  buttons.forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      buttons.forEach(function (b) { b.classList.remove("active"); });
+      btn.classList.add("active");
+      const filter = btn.getAttribute("data-filter");
+      cards.forEach(function (card) {
+        const cat = (card.getAttribute("data-category") || "").toLowerCase();
+        if (filter === "all" || cat.indexOf(filter) !== -1) {
+          card.classList.remove("is-hidden");
+        } else {
+          card.classList.add("is-hidden");
+        }
+      });
+    });
+  });
+})();
+
+// ===== Copy email =====
+(function () {
+  const btn = document.getElementById("copy-email");
+  if (!btn) return;
+  btn.addEventListener("click", function () {
+    const email = btn.getAttribute("data-email") || "veerashivakarthik@gmail.com";
+    function done() {
+      const old = btn.textContent;
+      btn.textContent = "Copied!";
+      btn.classList.add("copied");
+      setTimeout(function () {
+        btn.textContent = old;
+        btn.classList.remove("copied");
+      }, 1800);
+      burstConfetti(btn);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(email).then(done).catch(function () {
+        window.prompt("Copy email:", email);
+      });
+    } else {
+      window.prompt("Copy email:", email);
+    }
+  });
+})();
+
+// ===== Confetti burst =====
+function burstConfetti(anchor) {
+  const colors = ["#22d3ee", "#818cf8", "#34d399", "#f472b6", "#fbbf24"];
+  const rect = anchor ? anchor.getBoundingClientRect() : { left: window.innerWidth / 2, top: window.innerHeight / 2, width: 0, height: 0 };
+  const cx = rect.left + rect.width / 2;
+  const cy = rect.top + rect.height / 2;
+  for (let i = 0; i < 28; i++) {
+    const p = document.createElement("div");
+    p.className = "confetti-burst";
+    p.style.left = cx + "px";
+    p.style.top = cy + "px";
+    p.style.background = colors[i % colors.length];
+    document.body.appendChild(p);
+    const angle = (Math.PI * 2 * i) / 28;
+    const dist = 60 + Math.random() * 80;
+    const dx = Math.cos(angle) * dist;
+    const dy = Math.sin(angle) * dist - 40;
+    p.animate([
+      { transform: "translate(0,0) rotate(0deg)", opacity: 1 },
+      { transform: "translate(" + dx + "px," + dy + "px) rotate(" + (Math.random() * 360) + "deg)", opacity: 0 }
+    ], { duration: 700 + Math.random() * 400, easing: "cubic-bezier(0.2,0.8,0.2,1)" }).onfinish = function () {
+      p.remove();
+    };
+  }
+}
+
+// Confetti on resume download
+document.querySelectorAll('a[download], a.btn-resume').forEach(function (a) {
+  a.addEventListener("click", function () {
+    burstConfetti(a);
+  });
+});
+
+// ===== Contact form feedback =====
+(function () {
+  const form = document.getElementById("contact-form");
+  if (!form) return;
+  form.addEventListener("submit", function (e) {
+    const btn = form.querySelector(".form-submit");
+    if (btn) {
+      btn.textContent = "Sending…";
+    }
+    burstConfetti(btn || form);
+  });
+})();
