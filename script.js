@@ -117,13 +117,16 @@ if (themeToggle) {
   if (!canvas) return;
   const ctx = canvas.getContext("2d");
   let particles = [];
+  let stars = [];
   let animationId;
   let w = 0;
   let h = 0;
   let mouse = { x: null, y: null, active: false };
-  const COUNT = 80;
-  const MAX_DIST = 160;
-  const MOUSE_DIST = 180;
+  let time = 0;
+  const COUNT = 110;
+  const STAR_COUNT = 6;
+  const MAX_DIST = 170;
+  const MOUSE_DIST = 220;
 
   function isLight() {
     return document.documentElement.getAttribute("data-theme") === "light";
@@ -137,25 +140,56 @@ if (themeToggle) {
   function createParticles() {
     particles = [];
     for (let i = 0; i < COUNT; i++) {
-      const speed = Math.random() * 0.6 + 0.2;
+      const speed = Math.random() * 0.7 + 0.25;
       particles.push({
         x: Math.random() * w,
         y: Math.random() * h,
         vx: (Math.random() - 0.5) * speed,
         vy: (Math.random() - 0.5) * speed,
-        r: Math.random() * 2.2 + 0.8,
+        r: Math.random() * 2.4 + 0.7,
         pulse: Math.random() * Math.PI * 2,
-        pulseSpeed: 0.02 + Math.random() * 0.03
+        pulseSpeed: 0.015 + Math.random() * 0.035
+      });
+    }
+    stars = [];
+    for (let i = 0; i < STAR_COUNT; i++) {
+      stars.push({
+        x: Math.random() * w,
+        y: Math.random() * h * 0.6,
+        len: 40 + Math.random() * 80,
+        speed: 3 + Math.random() * 5,
+        angle: Math.PI / 4 + (Math.random() - 0.5) * 0.3,
+        opacity: 0,
+        delay: Math.random() * 400,
+        life: 0,
+        maxLife: 60 + Math.random() * 40
       });
     }
   }
 
   function draw() {
+    time++;
     ctx.clearRect(0, 0, w, h);
     const light = isLight();
     const dotColor = light ? [8, 145, 178] : [34, 211, 238];
     const lineColor = light ? [8, 145, 178] : [34, 211, 238];
     const accentColor = light ? [99, 102, 241] : [129, 140, 248];
+    const starColor = light ? [8, 145, 178] : [165, 243, 252];
+
+    const blobs = [
+      { x: w * 0.2 + Math.sin(time * 0.008) * 80, y: h * 0.3 + Math.cos(time * 0.006) * 60, r: 180, c: accentColor, a: light ? 0.04 : 0.07 },
+      { x: w * 0.75 + Math.cos(time * 0.007) * 70, y: h * 0.55 + Math.sin(time * 0.009) * 50, r: 200, c: dotColor, a: light ? 0.03 : 0.06 },
+      { x: w * 0.5 + Math.sin(time * 0.005) * 100, y: h * 0.8 + Math.cos(time * 0.008) * 40, r: 160, c: accentColor, a: light ? 0.025 : 0.05 }
+    ];
+    for (const b of blobs) {
+      const g = ctx.createRadialGradient(b.x, b.y, 0, b.x, b.y, b.r);
+      g.addColorStop(0, "rgba(" + b.c.join(",") + "," + b.a + ")");
+      g.addColorStop(1, "rgba(" + b.c.join(",") + ",0)");
+      ctx.beginPath();
+      ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+      ctx.fillStyle = g;
+      ctx.fill();
+    }
 
     for (let i = 0; i < particles.length; i++) {
       const p = particles[i];
@@ -166,17 +200,16 @@ if (themeToggle) {
         const dy = mouse.y - p.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
         if (dist < MOUSE_DIST && dist > 1) {
-          const force = (MOUSE_DIST - dist) / MOUSE_DIST * 0.04;
+          const force = (MOUSE_DIST - dist) / MOUSE_DIST * 0.055;
           p.vx += (dx / dist) * force;
           p.vy += (dy / dist) * force;
         }
       }
 
-      p.vx *= 0.995;
-      p.vy *= 0.995;
-
-      if (Math.abs(p.vx) < 0.05) p.vx += (Math.random() - 0.5) * 0.02;
-      if (Math.abs(p.vy) < 0.05) p.vy += (Math.random() - 0.5) * 0.02;
+      p.vx *= 0.994;
+      p.vy *= 0.994;
+      if (Math.abs(p.vx) < 0.06) p.vx += (Math.random() - 0.5) * 0.025;
+      if (Math.abs(p.vy) < 0.06) p.vy += (Math.random() - 0.5) * 0.025;
 
       p.x += p.vx;
       p.y += p.vy;
@@ -186,15 +219,15 @@ if (themeToggle) {
       if (p.y < 0) { p.y = 0; p.vy *= -1; }
       if (p.y > h) { p.y = h; p.vy *= -1; }
 
-      const pulseR = p.r + Math.sin(p.pulse) * 0.6;
-      const alpha = 0.35 + Math.sin(p.pulse) * 0.2;
+      const pulseR = p.r + Math.sin(p.pulse) * 0.7;
+      const alpha = 0.3 + Math.sin(p.pulse) * 0.25;
 
-      const gradient = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, pulseR * 4);
-      gradient.addColorStop(0, "rgba(" + accentColor.join(",") + "," + (alpha * 0.35) + ")");
-      gradient.addColorStop(1, "rgba(" + accentColor.join(",") + ",0)");
+      const glow = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, pulseR * 5);
+      glow.addColorStop(0, "rgba(" + accentColor.join(",") + "," + (alpha * 0.4) + ")");
+      glow.addColorStop(1, "rgba(" + accentColor.join(",") + ",0)");
       ctx.beginPath();
-      ctx.arc(p.x, p.y, pulseR * 4, 0, Math.PI * 2);
-      ctx.fillStyle = gradient;
+      ctx.arc(p.x, p.y, pulseR * 5, 0, Math.PI * 2);
+      ctx.fillStyle = glow;
       ctx.fill();
 
       ctx.beginPath();
@@ -208,23 +241,59 @@ if (themeToggle) {
         const dy = p.y - q.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
         if (dist < MAX_DIST) {
-          const a = (1 - dist / MAX_DIST) * 0.4;
+          const a = (1 - dist / MAX_DIST) * 0.45;
           ctx.beginPath();
           ctx.moveTo(p.x, p.y);
           ctx.lineTo(q.x, q.y);
           ctx.strokeStyle = "rgba(" + lineColor.join(",") + "," + a + ")";
-          ctx.lineWidth = 0.9;
+          ctx.lineWidth = 0.85;
           ctx.stroke();
         }
       }
     }
 
+    for (const s of stars) {
+      s.life++;
+      if (s.life < s.delay) continue;
+      const t = (s.life - s.delay) / s.maxLife;
+      if (t > 1) {
+        s.life = 0;
+        s.delay = 80 + Math.random() * 300;
+        s.x = Math.random() * w;
+        s.y = Math.random() * h * 0.5;
+        s.len = 40 + Math.random() * 90;
+        s.speed = 3.5 + Math.random() * 5;
+        continue;
+      }
+      const opacity = t < 0.2 ? t / 0.2 : t > 0.7 ? (1 - t) / 0.3 : 1;
+      const dx = Math.cos(s.angle) * s.speed;
+      const dy = Math.sin(s.angle) * s.speed;
+      s.x += dx;
+      s.y += dy;
+      const tailX = s.x - Math.cos(s.angle) * s.len;
+      const tailY = s.y - Math.sin(s.angle) * s.len;
+      const grad = ctx.createLinearGradient(tailX, tailY, s.x, s.y);
+      grad.addColorStop(0, "rgba(" + starColor.join(",") + ",0)");
+      grad.addColorStop(1, "rgba(" + starColor.join(",") + "," + (opacity * 0.7) + ")");
+      ctx.beginPath();
+      ctx.moveTo(tailX, tailY);
+      ctx.lineTo(s.x, s.y);
+      ctx.strokeStyle = grad;
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, 1.5, 0, Math.PI * 2);
+      ctx.fillStyle = "rgba(" + starColor.join(",") + "," + opacity + ")";
+      ctx.fill();
+    }
+
     if (mouse.active && mouse.x != null) {
-      const g = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, 120);
-      g.addColorStop(0, "rgba(" + accentColor.join(",") + ",0.12)");
+      const g = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, 140);
+      g.addColorStop(0, "rgba(" + accentColor.join(",") + ",0.15)");
+      g.addColorStop(0.5, "rgba(" + dotColor.join(",") + ",0.06)");
       g.addColorStop(1, "rgba(" + accentColor.join(",") + ",0)");
       ctx.beginPath();
-      ctx.arc(mouse.x, mouse.y, 120, 0, Math.PI * 2);
+      ctx.arc(mouse.x, mouse.y, 140, 0, Math.PI * 2);
       ctx.fillStyle = g;
       ctx.fill();
     }
