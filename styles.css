@@ -113,31 +113,34 @@ img { max-width: 100%; display: block; }
   padding: 130px 0 90px; overflow: hidden;
 }
 .hero-bg {
-  position: absolute; inset: 0; pointer-events: none;
+  position: absolute; inset: 0; pointer-events: none; overflow: hidden;
   background:
-    radial-gradient(ellipse 80% 55% at 50% -15%, rgba(34, 211, 238, 0.2), transparent 55%),
-    radial-gradient(ellipse 45% 40% at 85% 60%, rgba(129, 140, 248, 0.12), transparent),
-    radial-gradient(ellipse 35% 30% at 10% 75%, rgba(52, 211, 153, 0.08), transparent);
+    radial-gradient(ellipse 80% 55% at 50% -15%, rgba(34, 211, 238, 0.22), transparent 55%),
+    radial-gradient(ellipse 45% 40% at 85% 60%, rgba(129, 140, 248, 0.14), transparent),
+    radial-gradient(ellipse 35% 30% at 10% 75%, rgba(52, 211, 153, 0.1), transparent);
 }
 .hero-bg::before {
   content: ''; position: absolute;
-  width: 400px; height: 400px; border-radius: 50%;
-  top: 15%; right: 8%;
-  background: radial-gradient(circle, rgba(34, 211, 238, 0.15), transparent 70%);
-  filter: blur(40px); animation: float 12s ease-in-out infinite;
+  width: 480px; height: 480px; border-radius: 50%;
+  top: 10%; right: 5%;
+  background: radial-gradient(circle, rgba(34, 211, 238, 0.18), transparent 70%);
+  filter: blur(50px); animation: float 10s ease-in-out infinite;
 }
 .hero-bg::after {
-  content: ''; position: absolute; inset: 0;
-  background-image:
-    linear-gradient(rgba(34, 211, 238, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(34, 211, 238, 0.03) 1px, transparent 1px);
-  background-size: 64px 64px;
-  mask-image: radial-gradient(ellipse 65% 50% at 40% 35%, black, transparent);
-  -webkit-mask-image: radial-gradient(ellipse 65% 50% at 40% 35%, black, transparent);
+  content: ''; position: absolute;
+  width: 360px; height: 360px; border-radius: 50%;
+  bottom: 5%; left: 8%;
+  background: radial-gradient(circle, rgba(129, 140, 248, 0.16), transparent 70%);
+  filter: blur(45px); animation: float-alt 14s ease-in-out infinite;
 }
 @keyframes float {
-  0%, 100% { transform: translate(0, 0); }
-  50% { transform: translate(-30px, 20px); }
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(-40px, 25px) scale(1.08); }
+  66% { transform: translate(20px, -15px) scale(0.95); }
+}
+@keyframes float-alt {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(50px, -30px) scale(1.12); }
 }
 .hero-content { position: relative; z-index: 1; }
 .hero-greeting {
@@ -457,9 +460,7 @@ img { max-width: 100%; display: block; }
   filter: drop-shadow(0 4px 12px rgba(34, 211, 238, 0.3));
   transition: transform 0.4s ease;
 }
-.cert-card:hover .cert-icon {
-  transform: scale(1.15) rotate(-6deg);
-}
+.cert-card:hover .cert-icon { transform: scale(1.15) rotate(-6deg); }
 .cert-card h3 {
   font-size: 0.92rem; margin-bottom: 8px; line-height: 1.4; font-weight: 700;
 }
@@ -531,9 +532,7 @@ img { max-width: 100%; display: block; }
   font-size: 2rem; margin-bottom: 14px;
   transition: transform 0.4s ease;
 }
-.contact-card:hover .contact-icon {
-  transform: scale(1.2);
-}
+.contact-card:hover .contact-icon { transform: scale(1.2); }
 .contact-card h3 { font-size: 1.02rem; margin-bottom: 8px; font-weight: 700; }
 .contact-card p { font-size: 0.85rem; color: var(--text-secondary); word-break: break-all; }
 
@@ -598,11 +597,6 @@ html.theme-changing * { transition-duration: 0.45s !important; }
     radial-gradient(ellipse 45% 40% at 85% 60%, rgba(99, 102, 241, 0.08), transparent),
     radial-gradient(ellipse 35% 30% at 10% 75%, rgba(5, 150, 105, 0.06), transparent);
 }
-[data-theme="light"] .hero-bg::after {
-  background-image:
-    linear-gradient(rgba(8, 145, 178, 0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(8, 145, 178, 0.04) 1px, transparent 1px);
-}
 [data-theme="light"] .btn-primary { color: #fff; }
 [data-theme="light"] .btn-nav { color: #fff !important; }
 [data-theme="light"] .btn-cert:hover { color: #fff; }
@@ -664,7 +658,6 @@ body > *:not(#particles) {
 
 .navbar { z-index: 1000; }
 
-/* ===== Extra animations ===== */
 @keyframes gradient-shift {
   0%, 100% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
