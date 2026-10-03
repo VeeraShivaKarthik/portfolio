@@ -1,57 +1,44 @@
 // Typing animation
-const roles = [
+const texts = [
   "DevOps Enthusiast",
   "Cloud Support Engineer",
   "IT Operations Specialist",
   "Junior Cloud Engineer"
 ];
-
-let roleIndex = 0;
-let charIndex = 0;
+let count = 0;
+let index = 0;
+let currentText = "";
 let isDeleting = false;
+
 const typedEl = document.getElementById("typed-text");
-const typingSpeed = 90;
-const deletingSpeed = 50;
-const pauseTime = 1800;
 
 function type() {
-  const current = roles[roleIndex];
+  if (!typedEl) return;
+  currentText = texts[count];
+
   if (isDeleting) {
-    typedEl.textContent = current.substring(0, charIndex - 1);
-    charIndex--;
+    typedEl.textContent = currentText.substring(0, index - 1);
+    index--;
   } else {
-    typedEl.textContent = current.substring(0, charIndex + 1);
-    charIndex++;
+    typedEl.textContent = currentText.substring(0, index + 1);
+    index++;
   }
 
-  if (!isDeleting && charIndex === current.length) {
-    setTimeout(() => { isDeleting = true; type(); }, pauseTime);
-    return;
-  }
-  if (isDeleting && charIndex === 0) {
+  let speed = isDeleting ? 40 : 90;
+
+  if (!isDeleting && index === currentText.length) {
+    speed = 1800;
+    isDeleting = true;
+  } else if (isDeleting && index === 0) {
     isDeleting = false;
-    roleIndex = (roleIndex + 1) % roles.length;
+    count = (count + 1) % texts.length;
+    speed = 400;
   }
 
-  setTimeout(type, isDeleting ? deletingSpeed : typingSpeed);
+  setTimeout(type, speed);
 }
 
-// Mobile menu
-const hamburger = document.getElementById("hamburger");
-const navLinks = document.getElementById("nav-links");
-
-hamburger.addEventListener("click", () => {
-  navLinks.classList.toggle("open");
-  hamburger.classList.toggle("active");
-});
-
-// Close menu on link click
-navLinks.querySelectorAll("a").forEach(link => {
-  link.addEventListener("click", () => {
-    navLinks.classList.remove("open");
-    hamburger.classList.remove("active");
-  });
-});
+type();
 
 // Navbar scroll effect
 const navbar = document.getElementById("navbar");
@@ -63,24 +50,43 @@ window.addEventListener("scroll", () => {
   }
 });
 
-// Smooth active link highlighting (optional)
-const sections = document.querySelectorAll("section[id]");
-window.addEventListener("scroll", () => {
-  const scrollY = window.scrollY + 100;
-  sections.forEach(section => {
-    const top = section.offsetTop;
-    const height = section.offsetHeight;
-    const id = section.getAttribute("id");
-    const link = document.querySelector(`.nav-links a[href="#${id}"]`);
-    if (link) {
-      if (scrollY >= top && scrollY < top + height) {
-        link.style.color = "var(--accent)";
-      } else if (!link.classList.contains("btn-nav")) {
-        link.style.color = "";
-      }
-    }
-  });
-});
+// Mobile menu toggle
+const hamburger = document.getElementById("hamburger");
+const navLinks = document.getElementById("nav-links");
 
-// Start typing
-document.addEventListener("DOMContentLoaded", type);
+if (hamburger && navLinks) {
+  hamburger.addEventListener("click", () => {
+    navLinks.classList.toggle("open");
+  });
+
+  navLinks.querySelectorAll("a").forEach((link) => {
+    link.addEventListener("click", () => {
+      navLinks.classList.remove("open");
+    });
+  });
+}
+
+// Smooth reveal on scroll
+const revealEls = document.querySelectorAll(
+  ".info-card, .skill-category, .project-card, .cert-card, .edu-card, .contact-card, .timeline-content"
+);
+
+const observer = new IntersectionObserver(
+  (entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        entry.target.style.opacity = "1";
+        entry.target.style.transform = "translateY(0)";
+        observer.unobserve(entry.target);
+      }
+    });
+  },
+  { threshold: 0.12, rootMargin: "0px 0px -40px 0px" }
+);
+
+revealEls.forEach((el) => {
+  el.style.opacity = "0";
+  el.style.transform = "translateY(24px)";
+  el.style.transition = "opacity 0.55s ease, transform 0.55s ease";
+  observer.observe(el);
+});
