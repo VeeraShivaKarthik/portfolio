@@ -623,6 +623,22 @@ img {
   color: var(--accent);
 }
 
+.project-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.project-actions .btn-cert {
+  margin-top: 0;
+}
+
+.btn-github {
+  display: inline-flex;
+  align-items: center;
+}
+
 /* ===== Certifications ===== */
 .certs-grid {
   display: grid;
