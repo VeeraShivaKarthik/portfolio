@@ -318,3 +318,11 @@
   height: 8px;
   border-radius: 2px;
 }
+
+.contact-card-whatsapp:hover {
+  border-color: rgba(37, 211, 102, 0.55) !important;
+  box-shadow: 0 12px 36px rgba(37, 211, 102, 0.15);
+}
+.contact-card-whatsapp:hover .contact-icon {
+  filter: drop-shadow(0 4px 12px rgba(37, 211, 102, 0.35));
+}
