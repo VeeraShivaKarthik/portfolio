@@ -326,3 +326,8 @@
 .contact-card-whatsapp:hover .contact-icon {
   filter: drop-shadow(0 4px 12px rgba(37, 211, 102, 0.35));
 }
+
+.contact-card-vcard:hover {
+  border-color: rgba(129, 140, 248, 0.55) !important;
+  box-shadow: 0 12px 36px rgba(129, 140, 248, 0.15);
+}
