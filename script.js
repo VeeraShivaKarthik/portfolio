@@ -124,7 +124,7 @@ if (themeToggle) {
   let mouse = { x: null, y: null, active: false };
   let time = 0;
   const COUNT = 110;
-  const STAR_COUNT = 6;
+  const STAR_COUNT = 18;
   const MAX_DIST = 170;
   const MOUSE_DIST = 220;
 
@@ -160,7 +160,7 @@ if (themeToggle) {
         speed: 3 + Math.random() * 5,
         angle: Math.PI / 4 + (Math.random() - 0.5) * 0.3,
         opacity: 0,
-        delay: Math.random() * 400,
+        delay: Math.random() * 150,
         life: 0,
         maxLife: 60 + Math.random() * 40
       });
@@ -258,7 +258,7 @@ if (themeToggle) {
       const t = (s.life - s.delay) / s.maxLife;
       if (t > 1) {
         s.life = 0;
-        s.delay = 80 + Math.random() * 300;
+        s.delay = 30 + Math.random() * 120;
         s.x = Math.random() * w;
         s.y = Math.random() * h * 0.5;
         s.len = 40 + Math.random() * 90;
